@@ -3,3 +3,4 @@ node_modules
 bin
 style/dist
 storage
+*_templ.go
