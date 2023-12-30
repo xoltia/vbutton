@@ -1,0 +1,12 @@
+{
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  },
+  "scripts": {
+    "build:css": "tailwindcss build -i ./style/style.css -o ./style/dist/style.css",
+    "build:css:watch": "tailwindcss build -i ./style/style.css -o ./style/dist/style.css -w",
+    "gen:templ": "templ generate",
+    "gen:templ:watch": "templ generate --watch",
+    "build": "npm run build:css && npm run gen:templ && go build -o ./bin/vbutton ./cmd"
+  }
+}

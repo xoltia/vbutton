@@ -1,0 +1,97 @@
+package vbutton
+
+templ head(title string) {
+    <head>
+        if title != "" {
+            <title>{title}・ぶいぼたん</title>
+        } else {
+            <title>ぶいぼたん</title>
+        }
+
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <meta name="description" content="Vtuberの音声切り抜きを共有するサイト"/>
+        <meta name="keywords" content="Vtuber,音声,切り抜き,ぶいぼたん"/>
+        <link rel="stylesheet" href="/style/style.css"/>
+    </head>
+}
+
+templ header() {
+    <header class="p-4 bg-neutral-800 text-neutral-100">
+        <div class="flex justify-between items-center max-w-2xl mx-auto">
+            <a href="/" class="flex items-center">
+                <img src="/static/logo2.png" alt="ぶいぼたん" width="180"/>
+            </a>
+            <nav class="flex">
+                <a href="/submit" class="mx-1 p-2 border-b-2 border-transparent hover:border-pink-300 font-bold">提出</a>
+            </nav>
+        </div>
+    </header>
+}
+
+templ noticeMessage(message string) {
+    <div class="bg-pink-100 text-pink-900 border-pink-300 border-2 p-2 mb-4 rounded">
+        <span>{message}</span>
+    </div>
+}
+
+templ errMessage(message string) {
+    <div class="bg-red-100 text-red-900 border-red-300 border-2 p-2 mb-4 rounded">
+        <span>{message}</span>
+    </div>
+}
+
+templ infoTooltip(message string) {
+    <div class='has-tooltip inline-block cursor-help'>
+        <div class='tooltip rounded shadow-xl p-1 bg-neutral-700 text-neutral-100 ml-6' role='tooltip'>
+            {message}
+        </div>
+        <div class='bg-pink-300 text-neutral-900 rounded-full w-4 h-4 flex items-center justify-center' aria-hidden='true'>i</div>
+    </div>
+}
+
+templ submitPage(errors ...string) {
+    <html>
+        @head("提出")
+        <body class="bg-neutral-900 text-neutral-100">
+            @header()
+            <form action="/submit" method="post" enctype="multipart/form-data" class="max-w-2xl mx-auto p-8">
+                <h2 class="text-2xl font-bold mb-4">提出</h2>
+                @noticeMessage("提供していただいた音声は、確認後に公開されます。確認は手動で行っているため、時間がかかる場合があります。より早く公開されるように、正しい情報を入力してください。")
+
+                if len(errors) > 0 {
+                    for _, err := range errors {
+                        @errMessage(err)
+                    }
+                }
+
+                <label for="title" class="inline-block mr-2">タイトル</label>
+                @infoTooltip("含まれている内容がわかるように、簡潔に書いてください")
+                <input type="text" name="title" id="title" placeholder="タイトル" required class="mb-4 bg-neutral-800 text-neutral-100 p-2 w-full"/>
+                <label for="vtuber" class="inline-block mr-2">VTuber名</label>
+                @infoTooltip("チャンネル名ではなく、活動名を入力してください（例：湊あくあ）")
+                <input type="text" name="vtuber" id="vtuber" placeholder="VTuber名" required class="mb-4 bg-neutral-800 text-neutral-100 p-2 w-full"/>
+                <label for="agency" class="inline-block">所属事務所（任意）</label>
+                <input type="text" name="agency" id="agency" placeholder="所属事務所" class="mb-4 bg-neutral-800 text-neutral-100 p-2 w-full"/>
+                <label for="tags" class="inline-block">タグ（任意）</label>
+                <input type="text" name="tags" id="tags" placeholder="タグ1,タグ2,タグ3" class="mb-4 bg-neutral-800 text-neutral-100 p-2 w-full"/>
+                <label for="url" class="inline-block">参考URL（任意）</label>
+                @infoTooltip("音声の元となったURL（タイムスタンプ付きのものなど）を入力してください")
+                <input type="text" name="url" id="url" placeholder="YouTubeのURLなど" class="mb-4 bg-neutral-800 text-neutral-100 p-2 w-full"/>
+                <label for="file" class="inline-block">ファイル</label>
+                <input type="file" name="file" id="file" required accept="audio/*" class="
+                    mb-4 bg-neutral-800 text-neutral-100 p-2 w-full
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-pink-300 file:text-neutral-900
+                    hover:file:text-neutral-900
+                    hover:file:shadow-lg
+                    hover:cursor-pointer
+                "/>
+                <br/>
+                <input type="submit" value="提出" class="bg-pink-300 text-neutral-900 p-2 w-full cursor-pointer"/>
+            </form>
+        </body>
+    </html>
+}
