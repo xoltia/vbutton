@@ -33,7 +33,9 @@ func main() {
 	vc := vbutton.NewVoiceClipService(repo, storage, encoder)
 	submitHandler := vbutton.NewSubmitHandler(vc)
 	tosHandler := vbutton.NewTOSHandler()
+	indexHandler := vbutton.NewIndexHandler(vc)
 
+	http.Handle("/", indexHandler)
 	http.Handle("/submit", submitHandler)
 	http.Handle("/tos", tosHandler)
 	http.Handle("/storage/", http.StripPrefix("/storage/", http.FileServer(http.Dir("storage"))))

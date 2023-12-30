@@ -119,7 +119,7 @@ func (db *VoiceClipDB) GetVoiceClipsByVTuber(vtuberName string) ([]*VoiceClip, e
 			voice_clips.reference_url,
 			voice_clips.length,
 			voice_clips.approved_at,
-			voice_clips.created_at,
+			voice_clips.created_at
 		FROM voice_clips
 		WHERE voice_clips.vtuber_name = ?
 		AND voice_clips.approved_at IS NOT NULL
@@ -174,7 +174,7 @@ func (db *VoiceClipDB) GetVoiceClipsByAgency(agency string) ([]*VoiceClip, error
 			voice_clips.reference_url,
 			voice_clips.length,
 			voice_clips.approved_at,
-			voice_clips.created_at,
+			voice_clips.created_at
 		FROM voice_clips
 		WHERE voice_clips.agency = ?
 		AND voice_clips.approved_at IS NOT NULL
@@ -229,7 +229,7 @@ func (db *VoiceClipDB) GetVoiceClipsByTag(tag string) ([]*VoiceClip, error) {
 			voice_clips.reference_url,
 			voice_clips.length,
 			voice_clips.approved_at,
-			voice_clips.created_at,
+			voice_clips.created_at
 		FROM voice_clips
 		INNER JOIN voice_clip_tags ON voice_clip_tags.voice_clip_id = voice_clips.id
 		INNER JOIN tags ON tags.id = voice_clip_tags.tag_id
@@ -286,7 +286,7 @@ func (db *VoiceClipDB) GetRecentVoiceClips(limit int) ([]*VoiceClip, error) {
 			voice_clips.reference_url,
 			voice_clips.length,
 			voice_clips.approved_at,
-			voice_clips.created_at,
+			voice_clips.created_at
 		FROM voice_clips
 		WHERE voice_clips.approved_at IS NOT NULL
 		ORDER BY voice_clips.created_at DESC
@@ -370,7 +370,7 @@ func (db *VoiceClipDB) GetVoiceClip(id int64) (*VoiceClip, error) {
 			voice_clips.reference_url,
 			voice_clips.length,
 			voice_clips.approved_at,
-			voice_clips.created_at,
+			voice_clips.created_at
 		FROM voice_clips
 		WHERE voice_clips.id = ?
 		AND voice_clips.approved_at IS NOT NULL;

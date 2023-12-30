@@ -1,0 +1,15 @@
+package vbutton
+
+type IndexModel struct {
+    Clips []*VoiceClip
+}
+
+templ indexPage(model IndexModel) {
+    @page("") {
+        <div class="max-w-2xl mx-auto p-8"> 
+            for _, clip := range model.Clips {
+                <div>{clip.Title}</div>
+            }
+        </div>
+    }
+}
