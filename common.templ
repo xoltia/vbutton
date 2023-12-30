@@ -1,0 +1,80 @@
+package vbutton
+
+templ head(title string) {
+    <head>
+        if title != "" {
+            <title>{title}・ぶいぼたん</title>
+        } else {
+            <title>ぶいぼたん</title>
+        }
+
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <meta name="description" content="Vtuberの音声切り抜きを共有するサイト"/>
+        <meta name="keywords" content="Vtuber,音声,切り抜き,ぶいぼたん"/>
+        <link rel="stylesheet" href="/style/style.css"/>
+    </head>
+}
+
+templ header() {
+    <header class="p-4 bg-neutral-800 text-neutral-100">
+        <div class="flex justify-between items-center max-w-2xl mx-auto">
+            <a href="/" class="flex items-center">
+                <img src="/static/logo2.png" alt="ぶいぼたん" width="180"/>
+            </a>
+            <nav class="flex">
+                <a href="/submit" class="mx-1 p-2 border-b-2 border-transparent hover:border-pink-300 font-bold">提出</a>
+            </nav>
+        </div>
+    </header>
+}
+
+templ footer() {
+    <footer class="p-4 bg-neutral-800 text-neutral-100">
+        <div class="max-w-2xl mx-auto text-sm flex flex-col">
+            <div class="text-center mt-4">
+                <span>このサイトは、載っているバーチャルYouTuber方々や所属事務所とは一切関係ありません。</span>
+                <span>ご質問や削除依頼などは、以下のTwitterアカウントまでお願いします。</span>
+                <span>また、このサイトは、<a href="/tos" class="border-b-2 border-transparent hover:border-pink-300 font-bold">利用規約</a>に同意した方のみ利用できます。</span>
+            </div>
+            <div class="flex justify-center">
+                <a href="https://twitter.com/xoltia" class="mx-1 p-2 border-b-2 border-transparent hover:border-pink-300 font-bold">Twitter</a>
+                <a href="https://github.com/xoltia/v-button" class="mx-1 p-2 border-b-2 border-transparent hover:border-pink-300 font-bold">GitHub</a>
+            </div>
+        </div>
+    </footer>
+}
+
+templ page(title string) {
+        <html>
+        @head(title)
+        <body class="bg-neutral-900 text-neutral-100 min-h-screen flex flex-col">
+            @header()
+            <main class="flex-1">
+                {children...}
+            </main>
+            @footer()
+        </body>
+    </html>
+}
+
+templ noticeMessage(message string) {
+    <div class="bg-pink-100 text-pink-900 border-pink-300 border-2 p-2 mb-4 rounded">
+        <span>{message}</span>
+    </div>
+}
+
+templ errMessage(message string) {
+    <div class="bg-red-100 text-red-900 border-red-300 border-2 p-2 mb-4 rounded">
+        <span>{message}</span>
+    </div>
+}
+
+templ infoTooltip(message string) {
+    <div class='has-tooltip inline-block cursor-help'>
+        <div class='tooltip rounded shadow-xl p-1 bg-neutral-700 text-neutral-100 ml-6' role='tooltip'>
+            {message}
+        </div>
+        <div class='bg-pink-300 text-neutral-900 rounded-full w-4 h-4 flex items-center justify-center' aria-hidden='true'>i</div>
+    </div>
+}
