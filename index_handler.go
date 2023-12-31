@@ -25,21 +25,32 @@ func (h *IndexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	tags, err := h.vc.GetTopTags(30)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	vtubers, err := h.vc.GetTopVTubers(30)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	agencies, err := h.vc.GetTopAgencies(30)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	view := IndexModel{
-		Clips: clips,
-		Tags: []string{
-			"ポン", "挨拶", "センシティブ", "おやすみ",
-			"ヤンデレ", "ツンデレ", "圧", "かわいい", "英語",
-		},
-		VTubers: []string{
-			"博衣こより", "湊あくあ", "しぐれうい",
-			"白上フブキ", "夏色まつり", "百鬼あやめ",
-			"紫咲シオン", "癒月ちょこ", "大空スバル",
-			"月ノ美兎", "樋口楓", "猫又おかゆ",
-		},
-		Agencies: []string{
-			"ホロライブ", "にじさんじ", "ホロスターズ",
-		},
+		Clips:    clips,
+		Tags:     tags,
+		VTubers:  vtubers,
+		Agencies: agencies,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")

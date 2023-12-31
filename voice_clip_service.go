@@ -17,6 +17,9 @@ type VoiceClipRepository interface {
 	GetVoiceClipsByAgency(agencyName string) ([]*VoiceClip, error)
 	GetVoiceClipsByTag(tag string) ([]*VoiceClip, error)
 	GetUnapprovedVoiceClips(age time.Duration) ([]*VoiceClip, error)
+	GetTopAgencies(limit int) ([]string, error)
+	GetTopVTubers(limit int) ([]string, error)
+	GetTopTags(limit int) ([]string, error)
 }
 
 type FileStorage interface {
@@ -102,4 +105,16 @@ func (s *VoiceClipService) DeleteVoiceClip(id int64) error {
 
 func (s *VoiceClipService) GetUnapprovedVoiceClips(age time.Duration) ([]*VoiceClip, error) {
 	return s.db.GetUnapprovedVoiceClips(age)
+}
+
+func (s *VoiceClipService) GetTopAgencies(limit int) ([]string, error) {
+	return s.db.GetTopAgencies(limit)
+}
+
+func (s *VoiceClipService) GetTopVTubers(limit int) ([]string, error) {
+	return s.db.GetTopVTubers(limit)
+}
+
+func (s *VoiceClipService) GetTopTags(limit int) ([]string, error) {
+	return s.db.GetTopTags(limit)
 }

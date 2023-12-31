@@ -17,9 +17,9 @@ script playClip(clip *VoiceClip) {
 }
 
 templ clipPlayer(clip *VoiceClip) {
-    <div class="flex flex-row items-center">
+    <div class="flex flex-row items-center border-b-2 border-neutral-700 pb-4">
         <div class="flex-none mr-4">
-            <button class="bg-pink-300 text-neutral-900 text-white font-bold py-2 px-4 rounded-fill hover:bg-pink-400 shadow" onclick={playClip(clip)}>
+            <button class="bg-pink-300 text-white font-bold py-2 px-4 rounded-fill hover:bg-pink-400 shadow" onclick={playClip(clip)}>
                 Play
             </button>
         </div>
@@ -72,7 +72,7 @@ templ searchSection(model IndexModel) {
 
 templ audioSection(model IndexModel) {
     <h2 class="text-xl font-bold">最近のクリップ</h2>
-    <div class="mt-4 space-y-4 border-b-2 border-neutral-700 pb-4">
+    <div class="mt-4 space-y-4">
         for _, clip := range model.Clips {
             @clipPlayer(clip)
         }

@@ -379,6 +379,102 @@ func (db *VoiceClipDB) DeleteVoiceClip(id int64) error {
 	return tx.Commit()
 }
 
+func (db *VoiceClipDB) GetTopTags(limit int) ([]string, error) {
+	rows, err := db.Query(`
+		SELECT tags.text
+		FROM tags
+		INNER JOIN voice_clip_tags ON voice_clip_tags.tag_id = tags.id
+		INNER JOIN voice_clips ON voice_clips.id = voice_clip_tags.voice_clip_id
+		WHERE voice_clips.approved_at IS NOT NULL
+		GROUP BY tags.text
+		ORDER BY COUNT(*) DESC
+		LIMIT ?;
+	`, limit)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var tags []string
+
+	for rows.Next() {
+		var tag string
+		err := rows.Scan(&tag)
+		if err != nil {
+			return nil, err
+		}
+
+		tags = append(tags, tag)
+	}
+
+	return tags, nil
+}
+
+func (db *VoiceClipDB) GetTopVTubers(limit int) ([]string, error) {
+	rows, err := db.Query(`
+		SELECT vtuber_name
+		FROM voice_clips
+		WHERE approved_at IS NOT NULL
+		GROUP BY vtuber_name
+		ORDER BY COUNT(*) DESC
+		LIMIT ?;
+	`, limit)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var vtubers []string
+
+	for rows.Next() {
+		var vtuber string
+		err := rows.Scan(&vtuber)
+		if err != nil {
+			return nil, err
+		}
+
+		vtubers = append(vtubers, vtuber)
+	}
+
+	return vtubers, nil
+}
+
+func (db *VoiceClipDB) GetTopAgencies(limit int) ([]string, error) {
+	rows, err := db.Query(`
+		SELECT agency_name
+		FROM voice_clips
+		WHERE agency_name IS NOT NULL
+		AND approved_at IS NOT NULL
+		GROUP BY agency_name
+		ORDER BY COUNT(*) DESC
+		LIMIT ?;
+	`, limit)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var agencies []string
+
+	for rows.Next() {
+		var agency string
+		err := rows.Scan(&agency)
+		if err != nil {
+			return nil, err
+		}
+
+		agencies = append(agencies, agency)
+	}
+
+	return agencies, nil
+}
+
 func (db *VoiceClipDB) GetUnapprovedVoiceClips(maxAge time.Duration) ([]*VoiceClip, error) {
 	rows, err := db.Query(`
 		SELECT
@@ -532,19 +628,13 @@ func (db *VoiceClipDB) GetVoiceClip(id int64) (*VoiceClip, error) {
 }
 
 func (db *VoiceClipDB) insertTag(tx *sql.Tx, tag string) (int64, error) {
-	stmt, err := tx.Prepare(`
-		INSERT INTO tags (text) VALUES (?) ON CONFLICT (text) DO NOTHING;
-	`)
-	if err != nil {
-		return 0, err
-	}
+	row := tx.QueryRow(`
+		INSERT INTO tags (text) VALUES (?) ON CONFLICT (text) DO UPDATE SET text = excluded.text RETURNING id;
+	`, tag)
 
-	res, err := stmt.Exec(tag)
-	if err != nil {
-		return 0, err
-	}
-
-	return res.LastInsertId()
+	var tagID int64
+	err := row.Scan(&tagID)
+	return tagID, err
 }
 
 func (db *VoiceClipDB) insertVoiceClipTag(tx *sql.Tx, clipID, tagID int64) error {

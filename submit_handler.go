@@ -56,12 +56,20 @@ func (h *SubmitHandler) servePOST(w http.ResponseWriter, r *http.Request) {
 	agency := r.FormValue("agency")
 	tags := strings.Split(r.FormValue("tags"), ",")
 	refURL := r.FormValue("url")
+	trimmedTags := make([]string, 0, len(tags))
+
+	for i, tag := range tags {
+		tags[i] = strings.TrimSpace(tag)
+		if tags[i] != "" {
+			trimmedTags = append(trimmedTags, tags[i])
+		}
+	}
 
 	clip := &VoiceClip{
 		Title:        title,
 		VTuberName:   vtuber,
 		AgencyName:   sql.NullString{String: agency, Valid: agency != ""},
-		Tags:         tags,
+		Tags:         trimmedTags,
 		ReferenceURL: sql.NullString{String: refURL, Valid: refURL != ""},
 	}
 
