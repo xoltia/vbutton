@@ -1,6 +1,8 @@
-
-
 package vbutton
+
+import (
+    "fmt"
+)
 
 type IndexModel struct {
     Clips    []*VoiceClip
@@ -10,14 +12,42 @@ type IndexModel struct {
 }
 
 script playClip(clip *VoiceClip) {
-    const id = clip.ID;
-    const src = "/storage/" + id + ".ogg";
+    const clipElement = document.getElementById("clip-" + clip.ID);
+    const playButton = clipElement.querySelector("button");
+
+    if (Object.keys(window).includes(`audioSource${clip.ID}`)) {
+        window[`audioSource${clip.ID}`].pause();
+        playButton.textContent = "Play";
+        playButton.classList.remove("bg-pink-400");
+        playButton.classList.add("bg-pink-300");
+        delete window[`audioSource${clip.ID}`];
+        return;
+    }
+
+    const src = "/storage/" + clip.ID + ".ogg";
     const audioSource = new Audio(src);
+
+    playButton.textContent = "停止";
+    playButton.classList.remove("bg-pink-300");
+    playButton.classList.add("bg-pink-400");
+
+    window[`audioSource${clip.ID}`] = audioSource;
+
+    audioSource.addEventListener("ended", function() {
+        playButton.textContent = "Play";
+        playButton.classList.remove("bg-pink-400");
+        playButton.classList.add("bg-pink-300");
+
+        delete window[`audioSource${clip.ID}`];
+    });
+
+
     audioSource.play();
 }
 
 templ clipPlayer(clip *VoiceClip) {
-    <div class="flex flex-row items-center border-b-2 border-neutral-700 pb-4">
+    <div class="flex flex-row items-center border-b-2 border-neutral-700 pb-4"
+        id={fmt.Sprintf("clip-%d", clip.ID)}>
         <div class="flex-none mr-4">
             <button class="bg-pink-300 text-white font-bold py-2 px-4 rounded-fill hover:bg-pink-400 shadow" onclick={playClip(clip)}>
                 Play
