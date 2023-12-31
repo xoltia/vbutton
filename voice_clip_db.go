@@ -360,6 +360,24 @@ func (db *VoiceClipDB) GetClipTags(clipID int64) ([]string, error) {
 	return tags, nil
 }
 
+func (db *VoiceClipDB) DeleteVoiceClip(id int64) error {
+	tx, err := db.Begin()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(`
+		DELETE FROM voice_clips WHERE id = ?;
+	`, id)
+
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
 func (db *VoiceClipDB) UpdateVoiceClip(clip *VoiceClip) error {
 	tx, err := db.Begin()
 	if err != nil {
@@ -373,7 +391,8 @@ func (db *VoiceClipDB) UpdateVoiceClip(clip *VoiceClip) error {
 			vtuber_name = ?,
 			agency_name = ?,
 			reference_url = ?,
-			length = ?
+			length = ?,
+			approved_at = ?
 		WHERE id = ?;
 	`)
 	if err != nil {
@@ -386,6 +405,7 @@ func (db *VoiceClipDB) UpdateVoiceClip(clip *VoiceClip) error {
 		clip.AgencyName,
 		clip.ReferenceURL,
 		clip.Length,
+		clip.ApprovedAt,
 		clip.ID,
 	)
 	if err != nil {

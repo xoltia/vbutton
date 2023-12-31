@@ -3,17 +3,8 @@ package vbutton
 import (
     "strconv"
     "strings"
-	"database/sql"
 )
 
-
-func approvedBoolString(approvedAt sql.NullTime) string {
-    if !approvedAt.Valid {
-        return "false"
-    }
-
-    return "true"
-}
 
 func idString(id int64) string {
     return strconv.FormatInt(id, 10)
@@ -21,18 +12,23 @@ func idString(id int64) string {
 
 templ updatePage(clip *VoiceClip) {
     @page("管理者用 - 編集") {
-        <form action="/submit" method="post" enctype="multipart/form-data" class="max-w-2xl mx-auto p-8">
+        <form action="/update" method="post" enctype="multipart/form-data" class="max-w-2xl mx-auto p-8">
             <h2 class="text-2xl font-bold mb-4">編集（管理者用）</h2>
 
             <input type="hidden" name="id" value={idString(clip.ID)} class="mb-4"/>
 
             <label for="approved" class="inline-block mr-2">承認済み</label>
-            <input type="checkbox" name="approved" id="approved" value={approvedBoolString(clip.ApprovedAt)} class="mb-4"/>
+            <input type="checkbox" name="approved" id="approved" class="mb-4"
+                if (clip.ApprovedAt.Valid) {
+                    checked
+                }
+                value="true"
+            />
             
             <br />
 
             <label for="approved" class="inline-block mr-2">却下済み</label>
-            <input type="checkbox" name="rejected" id="rejected" value="false" class="mb-4"/>
+            <input type="checkbox" name="rejected" id="rejected" class="mb-4" value="true"/>
 
             <br />
 

@@ -8,6 +8,7 @@ import (
 type VoiceClipRepository interface {
 	InsertVoiceClip(vc *VoiceClip) error
 	UpdateVoiceClip(vc *VoiceClip) error
+	DeleteVoiceClip(id int64) error
 	GetRecentVoiceClips(limit int) ([]*VoiceClip, error)
 	GetClipTags(id int64) ([]string, error)
 	GetVoiceClip(id int64) (*VoiceClip, error)
@@ -19,6 +20,7 @@ type VoiceClipRepository interface {
 type FileStorage interface {
 	SaveFile(name string, content io.Reader) error
 	GetFile(name string) (io.Reader, error)
+	DeleteFile(name string) error
 }
 
 type AudioEncoder interface {
@@ -84,4 +86,14 @@ func (s *VoiceClipService) GetVoiceClipsByTag(tag string) ([]*VoiceClip, error) 
 
 func (s *VoiceClipService) UpdateVoiceClip(clip *VoiceClip) error {
 	return s.db.UpdateVoiceClip(clip)
+}
+
+func (s *VoiceClipService) DeleteVoiceClip(id int64) error {
+	err := s.db.DeleteVoiceClip(id)
+
+	if err != nil {
+		return err
+	}
+
+	return s.audioStorage.DeleteFile(fmt.Sprintf("%d.%s", id, s.audioEncoder.Extension()))
 }

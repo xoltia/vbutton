@@ -28,6 +28,10 @@ func (s *FileSystemStorage) SaveFile(name string, content io.Reader) error {
 	return err
 }
 
+func (s *FileSystemStorage) DeleteFile(name string) error {
+	return os.Remove(filepath.Join(s.root, name))
+}
+
 func (s *FileSystemStorage) GetFile(name string) (io.Reader, error) {
 	return os.Open(filepath.Join(s.root, name))
 }
