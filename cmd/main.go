@@ -31,13 +31,11 @@ func main() {
 	encoder := &vbutton.FFmpegEncoder{}
 
 	vc := vbutton.NewVoiceClipService(repo, storage, encoder)
-	submitHandler := vbutton.NewSubmitHandler(vc)
-	tosHandler := vbutton.NewTOSHandler()
-	indexHandler := vbutton.NewIndexHandler(vc)
 
-	http.Handle("/", indexHandler)
-	http.Handle("/submit", submitHandler)
-	http.Handle("/tos", tosHandler)
+	http.Handle("/", vbutton.NewIndexHandler(vc))
+	http.Handle("/submit", vbutton.NewSubmitHandler(vc))
+	http.Handle("/tos", vbutton.NewTOSHandler())
+	http.Handle("/update", vbutton.NewUpdateHandler(vc))
 	http.Handle("/storage/", http.StripPrefix("/storage/", http.FileServer(http.Dir("storage"))))
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.Handle("/style/", http.StripPrefix("/style/", http.FileServer(http.Dir("style/dist"))))

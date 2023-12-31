@@ -1,0 +1,61 @@
+package vbutton
+
+import (
+    "strconv"
+    "strings"
+	"database/sql"
+)
+
+
+func approvedBoolString(approvedAt sql.NullTime) string {
+    if !approvedAt.Valid {
+        return "false"
+    }
+
+    return "true"
+}
+
+func idString(id int64) string {
+    return strconv.FormatInt(id, 10)
+}
+
+templ updatePage(clip *VoiceClip) {
+    @page("管理者用 - 編集") {
+        <form action="/submit" method="post" enctype="multipart/form-data" class="max-w-2xl mx-auto p-8">
+            <h2 class="text-2xl font-bold mb-4">編集（管理者用）</h2>
+
+            <input type="hidden" name="id" value={idString(clip.ID)} class="mb-4"/>
+
+            <label for="approved" class="inline-block mr-2">承認済み</label>
+            <input type="checkbox" name="approved" id="approved" value={approvedBoolString(clip.ApprovedAt)} class="mb-4"/>
+            
+            <br />
+
+            <label for="approved" class="inline-block mr-2">却下済み</label>
+            <input type="checkbox" name="rejected" id="rejected" value="false" class="mb-4"/>
+
+            <br />
+
+            <label for="title" class="inline-block mr-2">タイトル</label>
+            <input type="text" name="title" value={clip.Title} id="title" placeholder="タイトル" class="mb-4 bg-neutral-800 text-neutral-100 p-2 w-full" required/>
+            
+            <label for="vtuber" class="inline-block mr-2">VTuber名</label>
+            <input type="text" value={clip.VTuberName} name="vtuber" id="vtuber" placeholder="VTuber名" class="mb-4 bg-neutral-800 text-neutral-100 p-2 w-full" required/>
+            
+            <label for="agency" class="inline-block">所属事務所（任意）</label>
+            <input type="text" value={clip.AgencyName.String} name="agency" id="agency" placeholder="所属事務所" class="mb-4 bg-neutral-800 text-neutral-100 p-2 w-full"/>
+            
+            <label for="tags" class="inline-block">タグ（任意）</label>
+            <input type="text" name="tags" id="tags" value={strings.Join(clip.Tags, ",")} placeholder="タグ1,タグ2,タグ3" class="mb-4 bg-neutral-800 text-neutral-100 p-2 w-full"/>
+            
+            <label for="url" class="inline-block">参考URL（任意）</label>
+            <input type="text" name="url" id="url" placeholder="YouTubeのURLなど" class="mb-4 bg-neutral-800 text-neutral-100 p-2 w-full" value={clip.ReferenceURL.String}/>
+            
+            <audio controls class="w-full mb-4">
+                <source src={"/storage/"+idString(clip.ID)+".ogg"} type="audio/ogg"/>
+            </audio>
+
+            <input type="submit" value="保存" class="bg-pink-300 text-neutral-900 p-2 w-full cursor-pointer"/>
+        </form>
+    }
+} 

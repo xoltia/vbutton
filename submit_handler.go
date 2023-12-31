@@ -16,6 +16,7 @@ func NewSubmitHandler(vc *VoiceClipService) *SubmitHandler {
 }
 
 func (h *SubmitHandler) serveGET(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	submitPage().Render(r.Context(), w)
 }
 

@@ -13,6 +13,11 @@ func NewIndexHandler(vc *VoiceClipService) *IndexHandler {
 }
 
 func (h *IndexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	clips, err := h.vc.GetRecentVoiceClips(100)
 
 	if err != nil {
@@ -24,5 +29,6 @@ func (h *IndexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Clips: clips,
 	}
 
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	indexPage(view).Render(r.Context(), w)
 }

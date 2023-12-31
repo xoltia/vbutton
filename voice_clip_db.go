@@ -360,6 +360,60 @@ func (db *VoiceClipDB) GetClipTags(clipID int64) ([]string, error) {
 	return tags, nil
 }
 
+func (db *VoiceClipDB) UpdateVoiceClip(clip *VoiceClip) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	stmt, err := tx.Prepare(`
+		UPDATE voice_clips
+		SET
+			title = ?,
+			vtuber_name = ?,
+			agency_name = ?,
+			reference_url = ?,
+			length = ?
+		WHERE id = ?;
+	`)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(
+		clip.Title,
+		clip.VTuberName,
+		clip.AgencyName,
+		clip.ReferenceURL,
+		clip.Length,
+		clip.ID,
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(`
+		DELETE FROM voice_clip_tags WHERE voice_clip_id = ?;
+	`, clip.ID)
+	if err != nil {
+		return err
+	}
+
+	for _, tag := range clip.Tags {
+		tagID, err := db.insertTag(tx, tag)
+		if err != nil {
+			return err
+		}
+
+		err = db.insertVoiceClipTag(tx, clip.ID, tagID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit()
+}
+
 func (db *VoiceClipDB) GetVoiceClip(id int64) (*VoiceClip, error) {
 	row := db.QueryRow(`
 		SELECT
@@ -372,8 +426,7 @@ func (db *VoiceClipDB) GetVoiceClip(id int64) (*VoiceClip, error) {
 			voice_clips.approved_at,
 			voice_clips.created_at
 		FROM voice_clips
-		WHERE voice_clips.id = ?
-		AND voice_clips.approved_at IS NOT NULL;
+		WHERE voice_clips.id = ?;
 	`, id)
 
 	var clip VoiceClip

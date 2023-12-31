@@ -7,6 +7,7 @@ import (
 
 type VoiceClipRepository interface {
 	InsertVoiceClip(vc *VoiceClip) error
+	UpdateVoiceClip(vc *VoiceClip) error
 	GetRecentVoiceClips(limit int) ([]*VoiceClip, error)
 	GetClipTags(id int64) ([]string, error)
 	GetVoiceClip(id int64) (*VoiceClip, error)
@@ -79,4 +80,8 @@ func (s *VoiceClipService) GetVoiceClipsByAgency(agencyName string) ([]*VoiceCli
 
 func (s *VoiceClipService) GetVoiceClipsByTag(tag string) ([]*VoiceClip, error) {
 	return s.db.GetVoiceClipsByTag(tag)
+}
+
+func (s *VoiceClipService) UpdateVoiceClip(clip *VoiceClip) error {
+	return s.db.UpdateVoiceClip(clip)
 }
