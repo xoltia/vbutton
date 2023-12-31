@@ -1,6 +1,8 @@
 package vbutton
 
 import (
+	"database/sql"
+	"fmt"
 	"net/http"
 )
 
@@ -18,7 +20,26 @@ func (h *IndexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	clips, err := h.vc.GetRecentVoiceClips(100)
+	query := r.URL.Query()
+	matchQuery := query.Get("q")
+	vtuberQuery := query.Get("v")
+	agencyQuery := query.Get("a")
+	tagQuery := query.Get("t")
+
+	var clips []*VoiceClip
+	var err error
+
+	if matchQuery != "" || vtuberQuery != "" || agencyQuery != "" || tagQuery != "" {
+		clips, err = h.vc.SearchClips(
+			sql.NullString{String: fmt.Sprintf("%%%s%%", matchQuery), Valid: matchQuery != ""},
+			sql.NullString{String: vtuberQuery, Valid: vtuberQuery != ""},
+			sql.NullString{String: agencyQuery, Valid: agencyQuery != ""},
+			sql.NullString{String: tagQuery, Valid: tagQuery != ""},
+			20,
+		)
+	} else {
+		clips, err = h.vc.GetRecentVoiceClips(20)
+	}
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -51,6 +72,22 @@ func (h *IndexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Tags:     tags,
 		VTubers:  vtubers,
 		Agencies: agencies,
+	}
+
+	if matchQuery != "" {
+		view.CurrentSearch = matchQuery
+	}
+
+	if vtuberQuery != "" {
+		view.CurrentVTuber = vtuberQuery
+	}
+
+	if agencyQuery != "" {
+		view.CurrentAgency = agencyQuery
+	}
+
+	if tagQuery != "" {
+		view.CurrentTag = tagQuery
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")

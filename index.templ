@@ -9,6 +9,10 @@ type IndexModel struct {
     Tags     []string
     VTubers  []string
     Agencies []string
+    CurrentTag string
+    CurrentVTuber string
+    CurrentAgency string
+    CurrentSearch string
 }
 
 script playClip(clip *VoiceClip) {
@@ -73,16 +77,37 @@ templ clipPlayer(clip *VoiceClip) {
 }
 
 templ searchSection(model IndexModel) {
-    <div class="mt-4">
+    if model.CurrentSearch != "" {
+        <h3 class="mb-2 font-bold">検索: {model.CurrentSearch}</h3>
+        <a href="/" class="inline-block text-sm text-pink-300 mb-3">← 検索をクリア</a>
+    }
+
+    if model.CurrentTag != "" {
+        <h3 class="mb-2 font-bold">タグ: {model.CurrentTag}</h3>
+        <a href="/" class="inline-block text-sm text-pink-300 mb-3">← 検索をクリア</a>
+    }
+
+    if model.CurrentVTuber != "" {
+        <h3 class="mb-2 font-bold">人物: {model.CurrentVTuber}</h3>
+        <a href="/" class="inline-block text-sm text-pink-300 mb-3">← 検索をクリア</a>
+    }
+
+    if model.CurrentAgency != "" {
+        <h3 class="mb-2 font-bold">所属事務所: {model.CurrentAgency}</h3>
+        <a href="/" class="inline-block text-sm text-pink-300 mb-3">← 検索をクリア</a>
+    }
+
+    <form method="GET" action="/">
         <label for="query" class="sr-only">検索</label>
-        <input type="text" id="query" name="query"
+        <input type="text" id="query" name="q"
             class="bg-neutral-700
                    focus:shadow-outline border-0
                    rounded py-2 px-4
                    block w-full appearance-none leading-normal"
             placeholder="検索"
         />
-    </div>
+        <button type="submit" class="hidden">検索</button>
+    </form>
 
     <div class="mt-4">
         <h2 class="text-xl font-bold border-b-2 border-pink-200 pb-1 mb-1">タグ</h2>
@@ -92,7 +117,7 @@ templ searchSection(model IndexModel) {
     </div>
     
     <div class="mt-4">
-        <h2 class="text-xl font-bold border-b-2 border-pink-200 pb-1 mb-1">タレント</h2>
+        <h2 class="text-xl font-bold border-b-2 border-pink-200 pb-1 mb-1">人物</h2>
         for _, vtuber := range model.VTubers {
             <a href={templ.SafeURL("/?v=" + vtuber)} class="whitespace-pre-wrap mr-3 mb-3 border-b-2 border-transparent hover:border-pink-300 hover:font-bold">{vtuber}</a>
         }
@@ -107,9 +132,13 @@ templ searchSection(model IndexModel) {
     </div>
 }
 
-templ audioSection(model IndexModel) {
-    <h2 class="text-xl font-bold">最近のクリップ</h2>
+templ audioSection(title string, model IndexModel) {
+    <h2 class="text-xl font-bold">{title}</h2>
     <div class="mt-4 space-y-4">
+        if len(model.Clips) == 0 {
+            <div class="text-neutral-400">クリップがありません。</div>
+        }
+
         for _, clip := range model.Clips {
             @clipPlayer(clip)
         }
@@ -123,7 +152,11 @@ templ indexPage(model IndexModel) {
                 @searchSection(model)
             </div>
             <div class="md:flex-grow">
-                @audioSection(model)
+                if model.CurrentSearch != "" || model.CurrentTag != "" || model.CurrentVTuber != "" || model.CurrentAgency != "" {
+                    @audioSection("検索結果", model)
+                } else {
+                    @audioSection("最近のクリップ", model)
+                }
             </div>
         </div>
     }

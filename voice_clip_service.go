@@ -1,6 +1,7 @@
 package vbutton
 
 import (
+	"database/sql"
 	"fmt"
 	"io"
 	"time"
@@ -20,6 +21,7 @@ type VoiceClipRepository interface {
 	GetTopAgencies(limit int) ([]string, error)
 	GetTopVTubers(limit int) ([]string, error)
 	GetTopTags(limit int) ([]string, error)
+	SearchClips(query, vtuber, agency, tag sql.NullString, limit int) ([]*VoiceClip, error)
 }
 
 type FileStorage interface {
@@ -41,6 +43,10 @@ type VoiceClipService struct {
 
 func NewVoiceClipService(db VoiceClipRepository, audioStorage FileStorage, encoder AudioEncoder) *VoiceClipService {
 	return &VoiceClipService{db: db, audioStorage: audioStorage, audioEncoder: encoder}
+}
+
+func (s *VoiceClipService) SearchClips(query, vtuber, agency, tag sql.NullString, limit int) ([]*VoiceClip, error) {
+	return s.db.SearchClips(query, vtuber, agency, tag, limit)
 }
 
 func (s *VoiceClipService) CreateVoiceClip(clip *VoiceClip, audio io.Reader) error {

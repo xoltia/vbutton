@@ -379,6 +379,91 @@ func (db *VoiceClipDB) DeleteVoiceClip(id int64) error {
 	return tx.Commit()
 }
 
+func (db *VoiceClipDB) SearchClips(
+	query sql.NullString,
+	vtuber sql.NullString,
+	agency sql.NullString,
+	tag sql.NullString,
+	limit int,
+) ([]*VoiceClip, error) {
+	var rows *sql.Rows
+
+	rows, err := db.Query(`
+		SELECT
+			id,
+			title,
+			vtuber_name,
+			agency_name,
+			reference_url,
+			length,
+			approved_at,
+			created_at
+		FROM voice_clips
+		WHERE approved_at IS NOT NULL
+		AND id IN (
+			SELECT DISTINCT voice_clips.id
+			FROM voice_clips
+			INNER JOIN voice_clip_tags ON voice_clip_tags.voice_clip_id = voice_clips.id
+			INNER JOIN tags ON tags.id = voice_clip_tags.tag_id
+			WHERE (
+				voice_clips.title LIKE ?
+				OR ? IS NULL
+			)
+			AND (
+				voice_clips.vtuber_name = ?
+				OR ? IS NULL
+			)
+			AND (
+				voice_clips.agency_name = ?
+				OR ? IS NULL
+			)
+			AND (
+				tags.text = ?
+				OR ? IS NULL
+			)
+			ORDER BY voice_clips.created_at DESC
+			LIMIT ?
+		)
+	`, query, query, vtuber, vtuber, agency, agency, tag, tag, limit)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var clips []*VoiceClip
+
+	for rows.Next() {
+		var clip VoiceClip
+
+		err := rows.Scan(
+			&clip.ID,
+			&clip.Title,
+			&clip.VTuberName,
+			&clip.AgencyName,
+			&clip.ReferenceURL,
+			&clip.Length,
+			&clip.ApprovedAt,
+			&clip.CreatedAt,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		clip.Tags, err = db.GetClipTags(clip.ID)
+
+		if err != nil {
+			return nil, err
+		}
+
+		clips = append(clips, &clip)
+	}
+
+	return clips, nil
+}
+
 func (db *VoiceClipDB) GetTopTags(limit int) ([]string, error) {
 	rows, err := db.Query(`
 		SELECT tags.text
