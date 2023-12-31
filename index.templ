@@ -81,11 +81,11 @@ templ audioSection(model IndexModel) {
 
 templ indexPage(model IndexModel) {
     @page("") {
-        <div class="flex flex-col md:flex-row items-start max-w-5xl mx-auto py-8 px-4">
-            <div class="md:w-1/3 md:mr-4 md:p-8 md:bg-neutral-800 md:rounded md:shadow mb-8">
+        <div class="flex flex-col md:flex-row md:items-start items-center max-w-5xl mx-auto py-8 px-4">
+            <div class="md:w-1/3 w-full md:mr-4 md:p-8 md:bg-neutral-800 md:rounded md:shadow mb-8">
                 @searchSection(model)
             </div>
-            <div class="md:w-1/2">
+            <div class="md:flex-grow">
                 @audioSection(model)
             </div>
         </div>
