@@ -2,6 +2,7 @@ package vbutton
 
 import (
 	"database/sql"
+	"time"
 
 	_ "modernc.org/sqlite"
 )
@@ -376,6 +377,61 @@ func (db *VoiceClipDB) DeleteVoiceClip(id int64) error {
 	}
 
 	return tx.Commit()
+}
+
+func (db *VoiceClipDB) GetUnapprovedVoiceClips(maxAge time.Duration) ([]*VoiceClip, error) {
+	rows, err := db.Query(`
+		SELECT
+			voice_clips.id,
+			voice_clips.title,
+			voice_clips.vtuber_name,
+			voice_clips.agency_name,
+			voice_clips.reference_url,
+			voice_clips.length,
+			voice_clips.approved_at,
+			voice_clips.created_at
+		FROM voice_clips
+		WHERE voice_clips.approved_at IS NULL
+		AND voice_clips.created_at > ?
+		ORDER BY voice_clips.created_at DESC;
+	`, time.Now().Add(-maxAge))
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var clips []*VoiceClip
+
+	for rows.Next() {
+		var clip VoiceClip
+
+		err := rows.Scan(
+			&clip.ID,
+			&clip.Title,
+			&clip.VTuberName,
+			&clip.AgencyName,
+			&clip.ReferenceURL,
+			&clip.Length,
+			&clip.ApprovedAt,
+			&clip.CreatedAt,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		clip.Tags, err = db.GetClipTags(clip.ID)
+
+		if err != nil {
+			return nil, err
+		}
+
+		clips = append(clips, &clip)
+	}
+
+	return clips, nil
 }
 
 func (db *VoiceClipDB) UpdateVoiceClip(clip *VoiceClip) error {

@@ -111,7 +111,14 @@ func (h *UpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	idString := r.URL.Query().Get("id")
 
 	if idString == "" {
-		http.Error(w, "id is required", http.StatusBadRequest)
+		clips, err := h.vc.GetUnapprovedVoiceClips(time.Hour * 24 * 7)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		overviewPage(clips).Render(r.Context(), w)
 		return
 	}
 

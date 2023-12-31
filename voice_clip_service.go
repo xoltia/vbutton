@@ -3,6 +3,7 @@ package vbutton
 import (
 	"fmt"
 	"io"
+	"time"
 )
 
 type VoiceClipRepository interface {
@@ -15,6 +16,7 @@ type VoiceClipRepository interface {
 	GetVoiceClipsByVTuber(vtuberName string) ([]*VoiceClip, error)
 	GetVoiceClipsByAgency(agencyName string) ([]*VoiceClip, error)
 	GetVoiceClipsByTag(tag string) ([]*VoiceClip, error)
+	GetUnapprovedVoiceClips(age time.Duration) ([]*VoiceClip, error)
 }
 
 type FileStorage interface {
@@ -96,4 +98,8 @@ func (s *VoiceClipService) DeleteVoiceClip(id int64) error {
 	}
 
 	return s.audioStorage.DeleteFile(fmt.Sprintf("%d.%s", id, s.audioEncoder.Extension()))
+}
+
+func (s *VoiceClipService) GetUnapprovedVoiceClips(age time.Duration) ([]*VoiceClip, error) {
+	return s.db.GetUnapprovedVoiceClips(age)
 }
