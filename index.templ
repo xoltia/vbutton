@@ -13,11 +13,13 @@ type IndexModel struct {
     CurrentVTuber string
     CurrentAgency string
     CurrentSearch string
+    FileTypes []string
 }
 
 script playClip(clip *VoiceClip) {
     const clipElement = document.getElementById("clip-" + clip.ID);
     const playButton = clipElement.querySelector("button");
+    const audioElement = clipElement.querySelector("audio");
 
     function resetButton() {
         playButton.innerHTML = `
@@ -27,18 +29,14 @@ script playClip(clip *VoiceClip) {
             </svg>
             Play
         `;
-
-        delete window[`audioSource${clip.ID}`];
     }
 
-    if (Object.keys(window).includes(`audioSource${clip.ID}`)) {
-        window[`audioSource${clip.ID}`].pause();
+    if (!audioElement.paused) {
+        audioElement.pause();
+        audioElement.currentTime = 0;
         resetButton();
         return;
     }
-
-    const src = "/storage/" + clip.ID + ".ogg";
-    const audioSource = new Audio(src);
 
     playButton.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" height="16" width="10" viewBox="0 0 320 512" class="mr-2">
@@ -47,12 +45,12 @@ script playClip(clip *VoiceClip) {
         </svg>
     停止`;
 
-    window[`audioSource${clip.ID}`] = audioSource;
-    audioSource.addEventListener("ended", resetButton);
-    audioSource.play();
+
+    audioElement.play();
+    audioElement.onended = resetButton;
 }
 
-templ clipPlayer(clip *VoiceClip) {
+templ clipPlayer(clip *VoiceClip, fileTypes []string) {
     <div class="flex flex-row items-center border-b-2 border-neutral-700 pb-4"
         id={fmt.Sprintf("clip-%d", clip.ID)}>
         <div class="flex-none mr-4">
@@ -63,6 +61,11 @@ templ clipPlayer(clip *VoiceClip) {
                 </svg>
                 Play
             </button>
+            <audio id={fmt.Sprintf("audio-%d", clip.ID)} preload="none">
+                for _, fileType := range fileTypes {
+                    <source src={fmt.Sprintf("/audio/%d.%s", clip.ID, fileType)} />
+                }
+            </audio>
         </div>
         <div class="flex-grow">
             <div class="text-lg font-bold">{clip.Title}</div>
@@ -140,7 +143,7 @@ templ audioSection(title string, model IndexModel) {
         }
 
         for _, clip := range model.Clips {
-            @clipPlayer(clip)
+            @clipPlayer(clip, model.FileTypes)
         }
     </div>
 }

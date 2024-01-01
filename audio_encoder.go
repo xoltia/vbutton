@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
+	"strings"
 	"sync"
 )
 
@@ -30,6 +31,7 @@ func (c *readCloser) Close() (err error) {
 type FFmpegEncoder struct {
 	Format   string
 	Codec    string
+	BitRate  string
 	buffPool *sync.Pool
 }
 
@@ -50,7 +52,7 @@ func (e *FFmpegEncoder) putBuffer(b *bytes.Buffer) {
 	e.buffPool.Put(b)
 }
 
-func (e *FFmpegEncoder) Encode(r io.Reader) (out io.Reader, err error) {
+func (e *FFmpegEncoder) Encode(r io.Reader) (out io.ReadCloser, err error) {
 	if e.Format == "" {
 		e.Format = DefaultFormat
 	}
@@ -59,12 +61,17 @@ func (e *FFmpegEncoder) Encode(r io.Reader) (out io.Reader, err error) {
 		e.Codec = DefaultCodec
 	}
 
+	if e.BitRate == "" {
+		e.BitRate = "96k"
+	}
+
 	cmd := exec.Command(
 		"ffmpeg",
-		"-i", "pipe:0",
-		"-f", e.Format,
-		"-c:a", e.Codec,
-		"pipe:1",
+		"-i", "pipe:0", // input
+		"-f", e.Format, // output format
+		"-c:a", e.Codec, // output codec
+		"-b:a", e.BitRate, // output bitrate
+		"pipe:1", // output
 	)
 
 	cmd.Stdin = r
@@ -99,7 +106,7 @@ func (e *FFmpegEncoder) Encode(r io.Reader) (out io.Reader, err error) {
 		return
 	}
 
-	out = readCloser{
+	out = &readCloser{
 		Reader: buff,
 		close: func() error {
 			e.putBuffer(buff)
@@ -111,5 +118,24 @@ func (e *FFmpegEncoder) Encode(r io.Reader) (out io.Reader, err error) {
 }
 
 func (e *FFmpegEncoder) Extension() string {
-	return e.Format
+	if strings.HasPrefix(e.Codec, "lib") {
+		return e.Codec[3:] + "." + e.Format
+	}
+
+	return e.Codec + "." + e.Format
+}
+
+func NewOpusOggEncoder() *FFmpegEncoder {
+	return &FFmpegEncoder{
+		Format:  "ogg",
+		Codec:   "libopus",
+		BitRate: "128k",
+	}
+}
+
+func NewOpusCafEncoder() *FFmpegEncoder {
+	return &FFmpegEncoder{
+		Format: "mp3",
+		Codec:  "libmp3lame",
+	}
 }

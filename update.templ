@@ -40,7 +40,7 @@ templ overviewPage(clips []*VoiceClip) {
                             <td>{clip.VTuberName}</td>
                             <td>
                                 <audio controls class="w-full">
-                                    <source src={"/storage/"+idString(clip.ID)+".ogg"} type="audio/ogg"/>
+                                    <source src={"/audio/"+idString(clip.ID)+".opus.ogg"} type="audio/ogg"/>
                                 </audio>
                             </td>
                             <td>

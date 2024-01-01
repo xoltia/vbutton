@@ -67,11 +67,14 @@ func (h *IndexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fileTypes := h.vc.FileTypes()
+
 	view := IndexModel{
-		Clips:    clips,
-		Tags:     tags,
-		VTubers:  vtubers,
-		Agencies: agencies,
+		Clips:     clips,
+		Tags:      tags,
+		VTubers:   vtubers,
+		Agencies:  agencies,
+		FileTypes: fileTypes,
 	}
 
 	if matchQuery != "" {
