@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	vbutton "github.com/xoltia/v-button"
+	"github.com/xoltia/vbutton"
 	_ "modernc.org/sqlite"
 )
 

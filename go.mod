@@ -1,4 +1,4 @@
-module github.com/xoltia/v-button
+module github.com/xoltia/vbutton
 
 go 1.19
 
